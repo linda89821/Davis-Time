@@ -12,6 +12,7 @@ class Course:
                  "dr_6099_ay20-21.csv"]
         self._score = collections.defaultdict(list)
         self._class_crn = collections.defaultdict(list)
+        self.grade = {'A+':4.0, 'A':4.0, 'A-':3.7, 'B+':3.3, 'B':3.0, 'B-':2.7, 'C+':2.3, 'C':2.0, 'C-':1.7, 'D+':1.3, 'D':1.0, 'D-':0.7, 'F':0}
         for data in datas:
             #with open(data, encoding="utf8", errors='ignore') as infile:
             with open(data) as infile:
@@ -50,6 +51,27 @@ class Course:
         letter_count = []
         temp_result = self.search_by_prof(names, year)
         crn, score = self.select_for_duplicate(temp_result)
+        grade = 0.0
+        if crn != -1:
+            for v in score:
+                letter_count.append(int(v[1]))
+                letter.append(v[0])
+            (course, title, name, enrolled) = list(self._class_crn[crn][0])[0]
+            print(course)
+            plt.title(course + " " + title)
+            plt.bar(range(1, len(letter) + 1), letter_count, color='skyblue', align="center")
+            plt.xticks(range(1, len(letter) + 1), letter)
+            plt.xlabel(name)
+            plt.show()
+            plt.fig_to_html()
+        else:
+            print("No such search")
+
+    def plot_by_title(self, names, year):
+        letter = []
+        letter_count = []
+        temp_result = self.search_by_title(names, year)
+        crn, score = self.select_for_duplicate(temp_result)
         if crn != -1:
             for v in score:
                 letter_count.append(int(v[1]))
@@ -79,8 +101,16 @@ class Course:
                     profs.append(k)
         return profs
 
+    def search_by_title(self, name, year):
+        title = []
+        for k, v in self._class_crn.items():
+            if year in k:
+                if name in list(v[0])[0][1]:
+                    title.append(k)
+        return title
+
     def select_for_duplicate(self, result):
-        if len(result) != 0:
+        if len(result) > 1:
             print("It appears duplicates!")
             count = 0
             for i in result:
@@ -91,11 +121,13 @@ class Course:
                 print(
                     str(count)+". (" + str(year) + " " + str(crn) + ") " + name + ": " + title + " " + course)
             answer = input("Select which you would like to search(1-" + str(count) + "): ")
-            #print(self._score[result[answer-1]])
             return result[answer-1], sorted(self._score[result[answer-1]])
+        elif len(result) == 1:
+            return result[0], sorted(self._score[result[0]])
         return -1, -1
 
 
 class_test = Course()
 #class_test.plot_by_crn("44590", "201701")
-class_test.plot_by_prof("Frid Yelena", "202103")
+#class_test.plot_by_prof("Frid Yelena", "202103")
+class_test.plot_by_title("Y1 -- Connections", "201902")
